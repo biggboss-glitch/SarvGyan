@@ -1,0 +1,36 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Environment variables
+.env
+
+# Data directories (user uploads and generated databases)
+data/uploads/*
+data/chroma_db/*
+data/temp/*
+!data/uploads/.gitkeep
+!data/chroma_db/.gitkeep
+!data/temp/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Audio temp files
+*.mp3
+*.wav
