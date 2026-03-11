@@ -7,11 +7,25 @@ Upload PDFs/DOCX, ask questions, and get AI-powered answers.
 """
 
 import os
+import logging
 import streamlit as st
 from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Configure a clean, user-friendly logging format
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    handlers=[logging.StreamHandler()]
+)
+
+# Silence noisy HTTP logs from third-party libraries
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+
+logger = logging.getLogger(__name__)
 
 from src.qa_chain import QAChain
 from src.vector_store import VectorStore
@@ -27,9 +41,14 @@ from src.utils import (
 
 
 # ─── Page Configuration ──────────────────────────────────────────────
+from PIL import Image
+
+icon_path = os.path.join(os.path.dirname(__file__), "assets", "icon.png")
+page_icon = Image.open(icon_path) if os.path.exists(icon_path) else "🧠"
+
 st.set_page_config(
     page_title=" SarvGyan",
-    page_icon="🧠",
+    page_icon=page_icon,
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -124,7 +143,8 @@ def init_session_state():
         st.session_state.messages = []
 
     if "indexed_docs" not in st.session_state:
-        st.session_state.indexed_docs = []
+        # Load existing documents from the database
+        st.session_state.indexed_docs = st.session_state.vector_store.list_documents()
 
 
 init_session_state()
@@ -152,6 +172,7 @@ with st.sidebar:
 
             if doc_id not in st.session_state.indexed_docs:
                 with st.spinner(f"Processing {uploaded_file.name}..."):
+                    logger.info(f"Processing document: {uploaded_file.name}")
                     try:
                         file_type = get_file_type(uploaded_file.name)
                         saved_path = save_uploaded_file(uploaded_file)
@@ -167,7 +188,9 @@ with st.sidebar:
                             f"✅ **{uploaded_file.name}** indexed "
                             f"({result['chunks_indexed']} chunks)"
                         )
+                        logger.info(f"✨ [Complete]   Successfully indexed document: {uploaded_file.name}")
                     except Exception as e:
+                        logger.error(f"❌ [Error]      Processing {uploaded_file.name}: {e}")
                         st.error(f"❌ Error processing {uploaded_file.name}: {e}")
 
     st.divider()
@@ -192,17 +215,20 @@ with st.sidebar:
 
     with col1:
         if st.button("🗑️ Clear Chat", use_container_width=True):
+            logger.info("User cleared chat history")
             st.session_state.messages = []
             st.session_state.qa_chain.clear_history()
             st.rerun()
 
     with col2:
         if st.button("🔄 Reset All", use_container_width=True):
+            logger.info("User requested full application reset")
             st.session_state.vector_store.reset()
             st.session_state.indexed_docs = []
             st.session_state.messages = []
             st.session_state.qa_chain.clear_history()
             cleanup_temp_files()
+            logger.info("Application reset complete")
             st.rerun()
 
 
@@ -239,6 +265,7 @@ if prompt := st.chat_input("Ask a question about your documents..."):
         with st.chat_message("assistant"):
             with st.spinner("Searching documents and generating answer..."):
                 try:
+                    logger.info(f"User asking question: {prompt}")
                     result = st.session_state.qa_chain.ask_question(prompt)
 
                     st.markdown(result["answer"])
@@ -248,6 +275,8 @@ if prompt := st.chat_input("Ask a question about your documents..."):
                         with st.expander("📎 Sources"):
                             for source in result["sources"]:
                                 st.caption(f"• {source}")
+                    
+                    logger.info(f"✅ [Complete]   Generated response ({len(result['answer'])} chars) using {len(result['sources'])} sources\n")
 
                     # Store assistant message
                     st.session_state.messages.append({
@@ -258,6 +287,7 @@ if prompt := st.chat_input("Ask a question about your documents..."):
 
                 except Exception as e:
                     error_msg = f"❌ Error generating response: {e}"
+                    logger.error(f"Failed to generate response: {e}")
                     st.error(error_msg)
                     st.session_state.messages.append({
                         "role": "assistant",

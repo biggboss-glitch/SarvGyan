@@ -7,12 +7,15 @@ Handles collection management, document indexing, and similarity search.
 
 import os
 import shutil
+import logging
 from typing import List, Dict, Optional
 
 import chromadb
 from chromadb.config import Settings
 
 from src.embeddings import generate_embeddings, generate_single_embedding
+
+logger = logging.getLogger(__name__)
 
 
 # Default path for the persistent ChromaDB database
@@ -38,12 +41,14 @@ class VectorStore:
         self.collection_name = collection_name or DEFAULT_COLLECTION_NAME
 
         try:
+            logger.debug(f"Initializing ChromaDB client at {self.db_path} (Collection: {self.collection_name})")
             self.client = chromadb.PersistentClient(path=self.db_path)
             self.collection = self.client.get_or_create_collection(
                 name=self.collection_name,
                 metadata={"hnsw:space": "cosine"},
             )
-        except Exception:
+        except Exception as e:
+            logger.warning(f"ChromaDB error ({e}). Wiping database directory and recreating...")
             # If DB is corrupted or incompatible, wipe and retry
             if os.path.exists(self.db_path):
                 shutil.rmtree(self.db_path, ignore_errors=True)
@@ -53,6 +58,7 @@ class VectorStore:
                 name=self.collection_name,
                 metadata={"hnsw:space": "cosine"},
             )
+            logger.debug("Successfully recreated ChromaDB collection")
 
     def add_documents(
         self,
@@ -158,7 +164,9 @@ class VectorStore:
 
     def get_document_count(self) -> int:
         """Get the total number of chunks in the collection."""
-        return self.collection.count()
+        count = self.collection.count()
+        logger.debug(f"Vector store contains {count} total chunks")
+        return count
 
     def list_documents(self) -> List[str]:
         """List all unique document IDs in the collection."""
@@ -171,8 +179,10 @@ class VectorStore:
 
     def reset(self) -> None:
         """Delete the entire collection and recreate it."""
+        logger.debug(f"Resetting ChromaDB collection '{self.collection_name}'")
         self.client.delete_collection(self.collection_name)
         self.collection = self.client.get_or_create_collection(
             name=self.collection_name,
             metadata={"hnsw:space": "cosine"},
         )
+        logger.info("🔄 [Reset]      System wiped and returned to fresh state")

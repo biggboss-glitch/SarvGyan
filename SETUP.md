@@ -65,12 +65,13 @@ Create a `.env` file in the project root:
 
 ```
 GROQ_API_KEY=your_groq_api_key_here
+HF_TOKEN=your_hftoken_here
 LLM_MODEL=llama-3.3-70b-versatile
 EMBEDDING_MODEL=BAAI/bge-large-en-v1.5
 CHROMA_DB_PATH=data/chroma_db
 ```
 
-Replace `your_groq_api_key_here` with your actual Groq API key.
+Replace `your_groq_api_key_here` with your actual Groq API key, and `HF_TOKEN` with your HuggingFace token (for faster local embeddings download).
 
 ---
 

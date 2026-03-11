@@ -12,10 +12,14 @@ wheels/
 # Environment variables
 .env
 
-# Data directories (user uploads and generated databases)
-data/uploads/*
-data/chroma_db/*
-data/temp/*
+# ChromaDB and persistent data
+data/chroma_db/
+data/uploads/
+data/temp/
+
+# Developer notebooks (backend testing)
+notebooks/
+*.ipynb*
 !data/uploads/.gitkeep
 !data/chroma_db/.gitkeep
 !data/temp/.gitkeep

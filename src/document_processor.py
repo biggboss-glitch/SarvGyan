@@ -6,11 +6,14 @@ Supports chunking for optimal embedding and retrieval.
 """
 
 import os
+import logging
 from pathlib import Path
 from typing import List, Dict, Optional
 
 from PyPDF2 import PdfReader
 from docx import Document
+
+logger = logging.getLogger(__name__)
 
 
 def extract_text_from_pdf(file_path: str) -> str:
@@ -23,6 +26,7 @@ def extract_text_from_pdf(file_path: str) -> str:
         Extracted text as a single string.
     """
     reader = PdfReader(file_path)
+    logger.debug(f"Extracting text from PDF: {file_path} ({len(reader.pages)} pages)")
     text = ""
     for page in reader.pages:
         page_text = page.extract_text()
@@ -41,6 +45,7 @@ def extract_text_from_docx(file_path: str) -> str:
         Extracted text as a single string.
     """
     doc = Document(file_path)
+    logger.debug(f"Extracting text from DOCX: {file_path}")
     text = "\n".join([para.text for para in doc.paragraphs if para.text.strip()])
     return text.strip()
 
@@ -93,6 +98,7 @@ def chunk_text(
         chunks.append(chunk.strip())
         start += chunk_size - chunk_overlap
 
+    logger.debug(f"Split {len(text)} characters into {len(chunks)} chunks")
     return [c for c in chunks if c]
 
 

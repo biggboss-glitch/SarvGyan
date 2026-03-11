@@ -6,12 +6,15 @@ vector search → LLM response generation.
 """
 
 import os
+import logging
 from typing import Dict, List, Optional, Generator
 from pathlib import Path
 
 from src.document_processor import process_document
 from src.vector_store import VectorStore
 from src.llm_handler import generate_response, generate_response_stream
+
+logger = logging.getLogger(__name__)
 
 
 # Load prompt templates
@@ -64,8 +67,10 @@ class QAChain:
         """
         doc_id = doc_id or os.path.basename(file_path)
 
+        logger.info(f"\n📄 [Embedding]  Extracting text & chunks from '{doc_id}'")
         result = process_document(file_path, file_type, chunk_size, chunk_overlap)
-
+        
+        logger.info(f"💾 [Storing]    Saving {len(result['chunks'])} chunks to Vector Database")
         num_chunks = self.vector_store.add_documents(
             chunks=result["chunks"],
             doc_id=doc_id,
@@ -96,11 +101,13 @@ class QAChain:
             Dict with 'answer', 'sources', and 'context'.
         """
         # Retrieve relevant context
+        logger.info(f"\n🔍 [Searching]  Retrieving chunks matching: \"{question}\"")
         search_results = self.vector_store.search(
             query=question,
             n_results=n_results,
             filter_doc_id=filter_doc_id,
         )
+        logger.info(f"   [Found]      {len(search_results)} relevant chunks in vector store")
 
         context = "\n\n---\n\n".join([r["text"] for r in search_results])
 
@@ -119,6 +126,7 @@ class QAChain:
         )
 
         # Generate response
+        logger.info("🤖 [Generating] Asking LLM (llama-3.3-70b/Groq) to craft response...")
         answer = generate_response(prompt)
 
         # Store in history
@@ -219,6 +227,7 @@ class QAChain:
 
     def clear_history(self) -> None:
         """Clear the conversation history."""
+        logger.info("Clearing chat history in QAChain")
         self.chat_history.clear()
 
     def get_indexed_documents(self) -> List[str]:

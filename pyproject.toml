@@ -1,7 +1,7 @@
 [project]
 name = "ai-knowledge-assistant"
 version = "0.1.0"
-description = "RAG-based AI Personal Knowledge Assistant powered by Google Gemini"
+description = "RAG-based AI Personal Knowledge Assistant powered by Groq and Huggingface"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
@@ -28,6 +28,8 @@ voice = [
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
+    "jupyter>=1.0.0",
+    "ipykernel>=6.0.0",
 ]
 
 [build-system]

@@ -6,6 +6,7 @@ Uses the all-MiniLM-L6-v2 model by default for local, free embeddings.
 """
 
 import os
+import logging
 from typing import List, Optional
 
 from sentence_transformers import SentenceTransformer
@@ -13,6 +14,8 @@ from sentence_transformers import SentenceTransformer
 
 # Default embedding model — lightweight and effective
 DEFAULT_MODEL = "BAAI/bge-large-en-v1.5"
+
+logger = logging.getLogger(__name__)
 
 _model_cache: Optional[SentenceTransformer] = None
 
@@ -31,7 +34,9 @@ def get_embedding_model(model_name: Optional[str] = None) -> SentenceTransformer
     model_name = model_name or os.getenv("EMBEDDING_MODEL", DEFAULT_MODEL)
 
     if _model_cache is None:
+        logger.info(f"Loading embedding model into memory: {model_name}")
         _model_cache = SentenceTransformer(model_name)
+        logger.info("Embedding model loaded successfully")
 
     return _model_cache
 
@@ -47,6 +52,7 @@ def generate_embeddings(texts: List[str], model_name: Optional[str] = None) -> L
         List of embedding vectors (each a list of floats).
     """
     model = get_embedding_model(model_name)
+    logger.debug(f"Generating embeddings for {len(texts)} text chunks")
     embeddings = model.encode(texts, show_progress_bar=False)
     return embeddings.tolist()
 
