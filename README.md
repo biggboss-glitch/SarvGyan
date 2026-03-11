@@ -1,4 +1,4 @@
-# 🧠 SarvGyan
+#  SarvGyan
 
 **AI-Powered Document Q&A Assistant**
 
@@ -25,8 +25,9 @@ SarvGyan transforms your documents into an intelligent assistant that can:
 - ✅ **Semantic Search** — Vector-based retrieval with ChromaDB
 - ✅ **AI-Powered Q&A** — Context-aware answers with conversation history
 - ✅ **Multi-Document** — Search across all uploaded files simultaneously
-- ✅ **Dark / Light Mode** — Theme toggle built in
-- ✅ **Auto-Summarization** — Generate summaries and key points
+- ✅ **Custom Theme & Branding** — Built-in Light/Dark mode toggle and custom app icon
+- ✅ **Clean Terminal Logging** — Structured, emoji-based CLI output for easy monitoring
+- ✅ **Developer Testing** — Isolated Jupyter Notebook for backend debugging
 - ✅ **Fast Setup** — Up and running in minutes with UV
 
 ---
@@ -60,6 +61,7 @@ Create a `.env` file in the project root:
 
 ```
 GROQ_API_KEY=your_groq_api_key_here
+HF_TOKEN=your_huggingface_token_here
 LLM_MODEL=llama-3.3-70b-versatile
 EMBEDDING_MODEL=BAAI/bge-large-en-v1.5
 CHROMA_DB_PATH=data/chroma_db
@@ -84,6 +86,10 @@ SarvGyan/
 ├── pyproject.toml          # Dependencies & project config
 ├── .env                    # API keys (not committed)
 ├── app.py                  # Main application
+├── assets/                 # App icons and media
+│   └── icon.png
+├── notebooks/              # Developer testing environment
+│   └── backend_test.ipynb
 ├── src/
 │   ├── document_processor.py   # PDF/DOCX text extraction
 │   ├── embeddings.py           # Vector embedding generation
