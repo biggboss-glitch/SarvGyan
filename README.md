@@ -1,4 +1,4 @@
-# 🧠 SarvGyan
+#  SarvGyan
 
 **AI-Powered Document Q&A Assistant**
 
